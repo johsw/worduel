@@ -4,14 +4,14 @@
     loginForm : function() {
       this.html('<form id="login"><input type="text" name="name" value="" id="name" placeholder="Type name..." required="required"><br /><div id="response"></div><input class="enter" type="submit" name="message" value="Play!" id="submit-name"></form>');
       $('#submit-name').click(function(){
-        name = $('input#name').val();
-        if (name.length === 0) {
+        user = $('input#name').val();
+        if (user.length === 0) {
           $('#response').text('Type a name...');
-        } else if (name.length < 3) { 
+        } else if (user.length < 3) { 
           $('#response').text('Your name must be at least 3 chars.');
         } else {
           randomString = generateRandomString();
-          socket.emit('login', name, randomString);
+          socket.emit('login', user, randomString);
           socket.on('loginResponse', function (response) {
             if(response.loggedIn && response.id ===  randomString) {
               
@@ -28,13 +28,13 @@
       $('form#login').remove();
       $('#contents').hide();
       socket.on('updateMenu', function (response) {
-        getMenuContents(response.users);
+        updateMenu(response.users);
       });
-      menu = '<h2>Duellists</h2><ul id="players">';
-      menu += '</ul>';
-      $('#contents').html(menu).show('fast', function(){
-        getMenuContents(users);
+      socket.on('invite', function (inviter) {
+        console.log('invited by: '+ inviter);
+        buildInvitation(inviter, users); 
       });
+      buildMenu(users);
     },
     startGame : function( ) { },
   };
@@ -69,13 +69,24 @@ function generateRandomString() {
   return string;
 }
 
+function buildMenu(users, message) {
+  menu = '<h2>Duellists</h2>';
+  
+  if(message !== undefined && message.length > 0) {
+    menu += '<div id="message">' + message + '</div>';
+  }
+  menu += '<ul id="players"></ul>';
+  $('#contents').html(menu).show('fast', function(){
+    updateMenu(users);
+  });
+}
 
 
-function getMenuContents(users) {
+function updateMenu(users) {
   count = 0;
   menu = '';
   for(key in users) {
-    if(key != name) { 
+    if(key != user) { 
       count++;
       menu += '<li class="player">';
       menu += '<div class="player-name">'+ key +'</div><div class="controls">';
@@ -105,22 +116,56 @@ function getMenuContents(users) {
     player = $(this).attr('id');
     elements = player.split('-');
     socket.emit('invite', elements[1]);
-    buildWaitScreen(elements[1]);
+    buildWaitScreen(elements[1], users);
   });
 }
-/*
-$(document).ready(function() {  
-  
 
-  function loginForm() {
-
+function buildInvitation(inviter,users) {
+  $('#contents').hide();
+  invitation = '<div id="invitation">';
+  invitation += 'You got an invitation from <em>' + inviter + '</em>. Wanna play?';
+  invitation += '<form><input type="submit" value="Yeah!" class="invite-answer" id="yes"><input type="submit" value="Nah.." class="invite-answer" id="no"></form>';
+  invitation += '</div>'
+ 
+  $('#contents').html(invitation).show('fast', function(){
     
-  }
-  
-  
-  // start of main code
-  function gameMenu(){
+     socket.on('cancelInvite', function (inviter) {
+        
+        console.log('cancelled by:' + inviter);
+        buildMenu(users, 'Invite got cancelled by <em>' +  inviter + '</em>'); 
+      });
+    
+    $('.invite-answer').click(function(){
+      answer = $(this).attr('id');
+      console.log(answer);
+      if(answer === 'yes') {
+        //GAME ON!!
+      }
+      if(answer === 'no') {
+        socket.emit('updateMenu');
+        socket.on('updateMenu', function (user) {
+          updateMenu(user); 
+        });
+      }
+      return false;
+    });
+  });
+}
 
-  };
-
-});*/
+function buildWaitScreen(invitee, users) {
+  $('#contents').hide();
+  html = '<div id="wait-screen">';
+  html += 'Wating for reponse from <em>' + invitee + '</em>';
+  html += '<form><input class="cancel" type="submit" value="Forget it!" class="wait-screen-cancel" id="cancel"></form>';
+  html += '</div>';
+  $('#contents').html(html).show('fast', function(){
+    $('#cancel').click(function(){
+      socket.emit('cancelInvite', invitee);
+      buildMenu(users);
+      return false;
+    }); 
+    
+    //TODO: invitation accept listener
+    
+  });
+}
