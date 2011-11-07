@@ -23,16 +23,13 @@ io.sockets.on('connection', function (socket) {
           socket.broadcast.emit('updateMenu', {users:users});
         });
       } else {
-        response = false;
         text = 'The user <em>'+ user +'</em> is taken :-(';
-        response = {loggedIn : response, text : text};
-        
+        response = {loggedIn : false, text : text};
       }
-      io.sockets.socket(userSocketId[user]).emit('loginResponse', response);
-      
+      io.sockets.socket(socket.id).emit('loginResponse', response); 
     } else {
-      response = {loggedIn : false, text : 'No useruser'};
-      io.sockets.emit('loginFail', response);
+      response = {loggedIn : false, text : 'No username given'};
+      io.sockets.emit('loginResponse', response);
     }   
   });
   socket.on('invite',function(invitee){
@@ -47,15 +44,54 @@ io.sockets.on('connection', function (socket) {
   });
   
   socket.on('cancelInvite',function(invitee){
-    
     socket.get('userName', function (err, inviter) {
       users[invitee].status = 'available';
       users[inviter].status = 'available';
-      
       io.sockets.socket(userSocketId[invitee]).emit('cancelInvite', inviter);
       io.sockets.emit('updateMenu', {users:users});
     });
   });
+  
+  socket.on('declineInvite',function(inviter){
+    socket.get('userName', function (err, invitee) {
+      users[invitee].status = 'available';
+      users[inviter].status = 'available';
+      io.sockets.socket(userSocketId[inviter]).emit('declineInvite', invitee);
+      io.sockets.emit('updateMenu', {users:users});
+    });
+  });
+  socket.on('startGame',function(playerA){
+    socket.get('userName', function (err, playerB) {
+      users[playerA].status = 'in game';
+      users[playerB].status = 'in game';
+      letters = generateLetters();
+      game = {id: generateRandomString(), round: {no: 1, letters: letters}, players : [playerA, playerB]}
+      games[game.id] = game;
+      io.sockets.socket(userSocketId[playerA]).emit('startGame', game);
+      io.sockets.socket(userSocketId[playerB]).emit('startGame', game);
+      io.sockets.emit('updateMenu', {users:users});
+    });
+  });
+  
+  function generateLetters() {
+    letters = new Array();
+    for(n=0; n<8; n++) {
+      letters[n] = String.fromCharCode(Math.round(25 * Math.random()) + 65);
+    }
+    return letters;
+  }
+  
+  function generateRandomString() {
+    string = '';
+    for(n=0; n<=28; n++) {
+      if(Math.round(Math.random()) === 1) {
+        string += String.fromCharCode(Math.round(9 * Math.random()) + 48);
+      } else {
+        string += String.fromCharCode(Math.round(25 * Math.random()) + 65);
+      }
+    }
+    return string;
+  }
   
   socket.on('quit',function(user){
     delete users[user];

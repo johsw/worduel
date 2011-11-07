@@ -2,7 +2,7 @@ body {
   font-family: 'Helvetica', Verdana, Arial, "MS Trebuchet", sans-serif;
   text-shadow: #333 3px 3px 2px;
   color: #efe;
-
+  background: #bdb;
 }
 
 h1 {
@@ -86,28 +86,42 @@ body#page #body-wrapper {
   border-radius: 5px;
 }
 
-.letter{
-  width: 40px;
-  height: 30px;
-  background: #ddd;
+.letter, .letter.hit, .board-cell {
+  width: 33px;
+  height: 25px;
+  
   text-align: center;
-  padding-top: 10px;
-  border: #666 1px solid;
+  padding-top: 7px;
+  
+  
   -moz-border-radius: 5px;
   border-radius: 5px;
+}
+.letter, .letter.hit {
+  background: #131;
+  border: #363 1px solid;
+  text-transform: uppercase;
+}
+
+.board-cell {
+background: #bdb;
+border: #363 1px solid;
 }
 .letter.ui-draggable-dragging {
-  background: #bbb;
+  background: #242;
 }
-
+#board {
+  border-spacing: 0px;
+}
 #board td {
-  width: 38px;
-  height: 38px;
-  border: 1px solid #666;
-  -moz-border-radius: 5px;
-  border-radius: 5px;
+  width: 30px;
+  height: 30px;
+  background: none;
+}
+#private {
+  border-spacing: 0px;
 }
 #private td {
-  width: 42px;
-
+  width: 30px;
+  background: none;
 }

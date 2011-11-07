@@ -6,7 +6,9 @@ $(document).ready(function() {
     //$.cookie('worduelUser', data.id);
     $('#contents').worduel('showMenu', data.users);
   });
-  
+  socket.on('startGame', function (game) {
+    $('#contents').worduel('startGame', game);
+  });
   
   
   if($.cookie('worduelUser') === null) {
