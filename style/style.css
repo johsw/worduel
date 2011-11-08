@@ -111,6 +111,7 @@ border: #363 1px solid;
   background: #242;
 }
 #board {
+  margin-top: 10px;
   border-spacing: 0px;
 }
 #board td {
@@ -124,4 +125,7 @@ border: #363 1px solid;
 #private td {
   width: 30px;
   background: none;
+}
+#time {
+  font-size: 12px;
 }

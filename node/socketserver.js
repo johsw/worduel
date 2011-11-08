@@ -70,8 +70,27 @@ io.sockets.on('connection', function (socket) {
       io.sockets.socket(userSocketId[playerA]).emit('startGame', game);
       io.sockets.socket(userSocketId[playerB]).emit('startGame', game);
       io.sockets.emit('updateMenu', {users:users});
+      timeout = new Array();
+      timeout[10] = setTimeout(sendTime, 1000, 10);
     });
   });
+  
+  socket.on('quit',function(user){
+    delete users[user];
+    io.sockets.emit('updateMenu', {users:users});
+  });
+  socket.on('updateMenu',function(){
+    io.sockets.emit('updateMenu', {users:users});
+  });
+  
+
+  function sendTime(sec) {
+    sec--;
+    if(sec >= 0) {
+      io.sockets.emit('updateTime', sec);
+      timeout[sec] = setTimeout(sendTime, 1000, sec);
+    }
+  }
   
   function generateLetters() {
     letters = new Array();
@@ -92,15 +111,6 @@ io.sockets.on('connection', function (socket) {
     }
     return string;
   }
-  
-  socket.on('quit',function(user){
-    delete users[user];
-    io.sockets.emit('updateMenu', {users:users});
-  });
-  socket.on('updateMenu',function(){
-    io.sockets.emit('updateMenu', {users:users});
-  });
-  
 /*
   socket.on('disconnect',function(event){
     console.log(event);
@@ -119,3 +129,4 @@ io.sockets.on('connection', function (socket) {
 
 
 });
+

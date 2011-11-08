@@ -67,7 +67,7 @@
             case 'inviting':
               menu += '<span class="player-status">Inviting</span>';            
               break;
-            case 'inGame':
+            case 'in game':
               menu += '<span class="player-status">In game</span>';
               break;
           }
@@ -87,10 +87,11 @@
         domElement.worduel('buildWaitScreen', elements[1], users);
       });
     },
-    startGame : function(game) {
+    startRound : function(game) {
       //buildBoard(game);
       //worduel('buildMenu');
-      $('#contents').worduel('showMenu', game);
+      this.worduel('buildBoard', game);
+
     },
     generateRandomString: function() {
       string = '';
@@ -113,8 +114,6 @@
       $('#contents').html(invitation).show('fast', function(){
 
          socket.on('cancelInvite', function (inviter) {
-
-            console.log('cancelled by:' + inviter);
             buildMenu(users, 'Invite got cancelled by <em>' +  inviter + '</em>'); 
           });
 
@@ -135,10 +134,6 @@
       socket.on('declineInvite', function (inviter) {
         this.worduel('buildMenu', users, '<em>' +  inviter + "</em> didn't wanna play"); 
       });
-      socket.on('startGame', function (inviter) {
-        //TODO: invitation accept listener
-      });
-
       $('#contents').hide();
       html = '<div id="wait-screen">';
       html += 'Wating for reponse from <em>' + invitee + '</em>';
@@ -154,7 +149,8 @@
       });
     },
     buildBoard: function(game) {
-      $('#contents').hide();
+      this.hide();
+      placed= new Array();
       html =  '<div id="game">';
       html += '<div id="time"></div>';
       html += '<table id="board">';
@@ -166,7 +162,6 @@
       html += '</table>';
       html += '<table id="private">';
       html += '<tr class="private-row">';
-      console.log(game);
       for (n=0; n<=7; n++) {
         letter = game.round.letters[n];
         piece = '<div id="letter-'+ letter +'" class="letter letter-mine draggable" draggable="true">'+ letter +'</div>';
@@ -175,7 +170,7 @@
       html += '</tr>';
       html += '</table>';
       html += '</div>';
-      $('#contents').html(html).show('fast', function(){
+      this.html(html).show('fast', function(){
 
         $(".draggable").draggable({ 
           snap: ".droppable", 
@@ -196,8 +191,38 @@
             placed[piece] = {'field' : field, 'letter': ui.draggable.html(), 'x': x, 'y' : y};
           },
         });
+        element = $('#time');
+
+        element.text('10 secs. remaining');
+        socket.on('updateTime', function (sec) {
+          if(sec === 0) {
+            element.html('Round ended');
+            console.log(placed);
+            string = element.worduel('readBoard', placed);
+            console.log(string);//
+            
+          } else if(sec === 1) {
+            element.html('1 sec. remaining');
+          } else {
+            element.html(sec + ' secs. remaining');
+          }
+        });
       });
-    }
+    },
+    readBoard : function(game) {
+      ordered = new Array();
+      $.each(placed, function(index, value){
+        if(typeof(value) == 'object') {
+          ordered[value.field] = value;
+        }
+      });
+      string = '';
+      $.each(ordered, function(index, value){
+        if(typeof(value) == 'object') {
+          console.log(value.letter);
+        }
+      });
+    },
   };
   
   $.fn.worduel = function(method) {  
