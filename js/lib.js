@@ -18,12 +18,14 @@
           socket.on('loginResponse', function (response) {            
             if(response.loggedIn && response.id ===  randomString) {
               $(document).trigger("worduel.login", response);
+              $('form#login').remove();
             } else {
               $('#response').html(response.text);
             }
           });
+
         }
-        $('form#login').remove();
+        
         return false;
       });
     },
@@ -88,10 +90,7 @@
       });
     },
     startRound : function(game) {
-      //buildBoard(game);
-      //worduel('buildMenu');
       this.worduel('buildBoard', game);
-
     },
     generateRandomString: function() {
       string = '';
@@ -163,7 +162,7 @@
       html += '<table id="private">';
       html += '<tr class="private-row">';
       for (n=0; n<=7; n++) {
-        letter = game.round.letters[n];
+        letter = game.rounds[game.round].letters[n];
         piece = '<div id="letter-'+ letter +'" class="letter letter-mine draggable" draggable="true">'+ letter +'</div>';
         html += '<td class="private-cell" id="private-cell-'+ n +'">'+ piece +'</td>';
       }
@@ -182,13 +181,16 @@
           drop: function(event, ui) { 
             $(this).addClass('hit');
             fieldElements = $(this).attr('id').split('-');
-            field = fieldElements[4];
-            x = fieldElements[2];
-            y = fieldElements[3];
+            field = fieldElements[2];
             pieceElements = ui.draggable.attr('id').split('-');
             piece = pieceElements[1];
-
-            placed[piece] = {'field' : field, 'letter': ui.draggable.html(), 'x': x, 'y' : y};
+          
+            placed = $('#game').data('placed');
+            if (placed == undefined) {
+              placed = new Array();
+            }
+            placed[field] = {'field' : field, 'letter': piece};
+            $('#game').data('placed', placed);
           },
         });
         element = $('#time');
@@ -197,10 +199,15 @@
         socket.on('updateTime', function (sec) {
           if(sec === 0) {
             element.html('Round ended');
-            console.log(placed);
-            string = element.worduel('readBoard', placed);
-            console.log(string);//
-            
+            element.worduel('readBoard', placed, function(string) {
+
+              game.rounds[game.round].response = new Object();
+              game.rounds[game.round].response[user] = string;
+              console.log('END');
+              console.log(game);
+              socket.emit('endRound', game);
+            });
+
           } else if(sec === 1) {
             element.html('1 sec. remaining');
           } else {
@@ -209,19 +216,17 @@
         });
       });
     },
-    readBoard : function(game) {
-      ordered = new Array();
+    readBoard : function(placed, callback) {
+      string = ''
+      space = false;
       $.each(placed, function(index, value){
-        if(typeof(value) == 'object') {
-          ordered[value.field] = value;
+        if(typeof(value) == 'object' && !space) {
+          string += value.letter;
+        } else {
+          space = true;
         }
       });
-      string = '';
-      $.each(ordered, function(index, value){
-        if(typeof(value) == 'object') {
-          console.log(value.letter);
-        }
-      });
+      return callback(string);
     },
   };
   

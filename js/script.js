@@ -7,6 +7,7 @@ $(document).ready(function() {
     $('#contents').worduel('showMenu', data.users);
   });
   socket.on('startGame', function (game) {
+    console.log(game);
     $('#contents').worduel('startRound', game);
   });
   
