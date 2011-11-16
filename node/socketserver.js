@@ -115,7 +115,7 @@ io.sockets.on('connection', function (socket) {
               if (games[game.id].points == undefined) {
                 games[game.id].points = new Object();
               }
-              if (game.rounds[game.round].finished == undefined) {
+              if (games[game.id].rounds[game.round].finished == undefined) {
                 games[game.id].rounds[game.round].finished = new Array(player);
               } else {
                 games[game.id].rounds[game.round].finished[games[game.id].rounds[game.round].finished.length] = player;
@@ -131,9 +131,10 @@ io.sockets.on('connection', function (socket) {
               } else {
                 games[game.id].points[player] = parseInt(games[game.id].points[player]) + parseInt(games[game.id].rounds[game.round].points[player]);
               }
+              console.log(games[game.id].rounds[game.round].finished);
               if (games[game.id].rounds[game.round].finished.length == games[game.id].players.length) {
                 
-
+                delete games[game.id].rounds[game.round].finished;
                 nextRound =  parseInt(games[game.id].round) + 1;
                 if (games[game.id].round > NO_ROUNDS) {
                   console.log('----------- END GAME -----------');
