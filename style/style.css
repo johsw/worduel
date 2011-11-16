@@ -129,3 +129,17 @@ border: #363 1px solid;
 #time {
   font-size: 12px;
 }
+#round-status {
+  width: 100%;
+  text-align: right;
+}
+#round-status .player {
+  text-align: left;
+}
+#round-status tr.headers td {
+  border-bottom: 1px solid #aaa;
+}
+#next-game {
+  margin-top: 20px;
+  font-size: 12px;
+}

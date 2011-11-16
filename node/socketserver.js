@@ -5,6 +5,12 @@ var users = {};
 var userSocketId = {};
 var userCookieId = {};
 var words =  new Object();
+var mongodb = require('mongodb');
+// Now create the server, passing our options.
+//var serv = new mongodb.Server('localhost', 27017, serverOptions);
+
+
+
 io.sockets.on('connection', function (socket) {
 
   socket.on('login', function (user, cookieId) {
@@ -80,47 +86,58 @@ io.sockets.on('connection', function (socket) {
   });
   socket.on('endRound',function(game){
     socket.get('userName', function (err, player) {
-      mongodb = require('mongodb');
-      // Now create the server, passing our options.
-      //var serv = new mongodb.Server('localhost', 27017, serverOptions);
-      var dbServer = new mongodb.Server("127.0.0.1", 27017, {auto_reconnect: true});
-      var db = new mongodb.Db('worduel', dbServer);
+      
       //game.rounds[game.round].response[player];
       words[player] = game.rounds[game.round].response[player];
-      console.log(words);
+      if(games[game.id].rounds[game.round].response == undefined) {
+
+        //TODO: check the round letters match
+        games[game.id].rounds[game.round] = game.rounds[game.round];
+      } else {
+        //TODO: check the round letters match
+        games[game.id].rounds[game.round].response[player] = game.rounds[game.round].response[player];
+      }
+      //TODO: check if returned word has only used th provided letters
+      console.log('-> ' + player);
+      var dbServer = new mongodb.Server("127.0.0.1", 27017, {auto_reconnect: true});
+      var db = new mongodb.Db('worduel', dbServer);
       db.open(function (error, db) {
         db.collection('words', function(err, collection){
           collection.find({'word': words[player]}, {'limit':1}, function(err, cursor) {
             cursor.toArray(function(err, docs) {
-              if (game.rounds[game.round].points == undefined) {
-                game.rounds[game.round].points = new Object();
+              if (games[game.id].rounds[game.round].points == undefined) {
+                games[game.id].rounds[game.round].points = new Object();
+              }
+              if (games[game.id].points == undefined) {
+                games[game.id].points = new Object();
               }
               if (game.rounds[game.round].finished == undefined) {
-                game.rounds[game.round].finished = 1;
-                console.log('-- first');
+                games[game.id].rounds[game.round].finished = 1;
               } else {
-                game.rounds[game.round].finished++;
-                console.log('-- later');
+                games[game.id].rounds[game.round].finished++;
               }
               if(docs.length > 0) {
-                game.rounds[game.round].points[player] = game.rounds[game.round].response[player].length;
+                games[game.id].rounds[game.round].points[player] = game.rounds[game.round].response[player].length;
               } else {
-                game.rounds[game.round].points[player] = 0;
+                games[game.id].rounds[game.round].points[player] = 0;
               }
-              if (game.rounds[game.round].finished == 2) {
-                //console.log('END: ', game);
+            
+              if(games[game.id].points[player] == undefined) {
+                games[game.id].points[player] = games[game.id].rounds[game.round].points[player];
+              } else {
+                games[game.id].points[player] = parseInt(games[game.id].points[player]) + parseInt(games[game.id].rounds[game.round].points[player]);
               }
-              console.log('END: ', game);
+              if (games[game.id].rounds[game.round].finished == 2) {
+                console.log(games[game.id].players);
+                console.log(games[game.id].players[0]);
+                console.log(userSocketId[games[game.id].players[0]]);
+                io.sockets.socket(userSocketId[games[game.id].players[0]]).emit('roundStatus', games[game.id]);
+                io.sockets.socket(userSocketId[games[game.id].players[1]]).emit('roundStatus', games[game.id]);
+              }
+              console.log('END: ', games[game.id]);
             });
-
           });
-          //do stuff using collection variable
-
         });
-        // Do something with the connection.
-
-        // Make sure to call db.close() when ALL connections need
-        // to be shut down.
         db.close();
       });
     });

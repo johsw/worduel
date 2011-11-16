@@ -92,6 +92,24 @@
     startRound : function(game) {
       this.worduel('buildBoard', game);
     },
+    roundStatus : function(game) {
+      string = '<h2>Round '+ game.round +'</h2>';
+      string += '<table id="round-status">';
+      string += '<tr class="headers"><th class="player">Player</th><th>Word</th><th>Points</th><th>Total</th></tr>';
+      $.each(game.players,function(index, player){
+        string += '<tr class="data">';
+        string += '<td class="player">' + player + '</td>';
+        string += '<td>' + game.rounds[game.round].response[player] + '</td>';
+        string += '<td>' + game.rounds[game.round].points[player] + '</td>';
+        string += '<td>' + game.points[player] +'</td>';
+        string += '</tr>';
+      })
+      string += '</table>';
+      if(game.round != 10) {
+        string += '<div id="next-game">The next round will start in a few secs.</div>';
+      }
+      this.html(string);
+    },
     generateRandomString: function() {
       string = '';
       for(n=0; n<=28; n++) {
@@ -200,11 +218,9 @@
           if(sec === 0) {
             element.html('Round ended');
             element.worduel('readBoard', placed, function(string) {
-
+              //TODO: add spinner
               game.rounds[game.round].response = new Object();
               game.rounds[game.round].response[user] = string;
-              console.log('END');
-              console.log(game);
               socket.emit('endRound', game);
             });
 
