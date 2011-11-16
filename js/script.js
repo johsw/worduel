@@ -6,7 +6,7 @@ $(document).ready(function() {
     //$.cookie('worduelUser', data.id);
     $('#contents').worduel('showMenu', data.users);
   });
-  socket.on('startGame', function (game) {
+  socket.on('startRound', function (game) {
     $('#contents').worduel('startRound', game);
   });
   socket.on('roundStatus', function (game) {

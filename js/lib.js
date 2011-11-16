@@ -169,6 +169,7 @@
       this.hide();
       placed= new Array();
       html =  '<div id="game">';
+      html += '<h2>Round '+ game.round +'</h2>';
       html += '<div id="time"></div>';
       html += '<table id="board">';
       html += '<tr class="board-row">';
