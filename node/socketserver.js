@@ -87,7 +87,7 @@ io.sockets.on('connection', function (socket) {
   });
   socket.on('endRound',function(game){
     socket.get('userName', function (err, player) {
-      console.log('END ROUND', player);
+      //console.log('END ROUND', player);
       //game.rounds[game.round].response[player];
       words[player] = game.rounds[game.round].response[player];
       if(games[game.id].rounds[game.round].response == undefined) {
@@ -106,9 +106,9 @@ io.sockets.on('connection', function (socket) {
           collection.find({'word': words[player]}, {'limit':1}, function(err, cursor) {
             cursor.toArray(function(err, docs) {
               
-              console.log('DOCS',docs);
-              console.log('ERR',err);
-              console.log('docs.length',docs.length);
+              //console.log('DOCS',docs);
+              //console.log('ERR',err);
+              //console.log('docs.length',docs.length);
               if (games[game.id].rounds[game.round].points == undefined) {
                 games[game.id].rounds[game.round].points = new Object();
               }
@@ -131,20 +131,19 @@ io.sockets.on('connection', function (socket) {
               } else {
                 games[game.id].points[player] = parseInt(games[game.id].points[player]) + parseInt(games[game.id].rounds[game.round].points[player]);
               }
-              console.log(games[game.id].rounds[game.round].finished);
+              //console.log(games[game.id].rounds[game.round].finished);
               if (games[game.id].rounds[game.round].finished.length == games[game.id].players.length) {
                 
                 delete games[game.id].rounds[game.round].finished;
-                nextRound =  parseInt(games[game.id].round) + 1;
+                
+                for (var i = 0; i < games[game.id].players.length; i++) {
+                  io.sockets.socket(userSocketId[games[game.id].players[i]]).emit('roundStatus', games[game.id]);
+                }
+                
                 if (games[game.id].round > NO_ROUNDS) {
-                  console.log('----------- END GAME -----------');
+                  games[game.id].roundTimeout = setTimeout(endGame, 6000, game);
                 } else {
-                  console.log('ONE MORE ROUND: ', games[game.id].round);
-
-                  
-                  for (var i = 0; i < games[game.id].players.length; i++) {
-                    io.sockets.socket(userSocketId[games[game.id].players[i]]).emit('roundStatus', games[game.id]);
-                  }
+                  nextRound =  parseInt(games[game.id].round) + 1;
                   games[game.id].round = nextRound;
                   games[game.id].rounds[games[game.id].round] = {no: games[game.id].round, letters: generateLetters()};
                   games[game.id].roundTimeout = setTimeout(startRound, 6000, game);
@@ -169,20 +168,27 @@ io.sockets.on('connection', function (socket) {
   });
   
   function startRound(game) {
+
     for (var i = 0; i < games[game.id].players.length; i++) {
+      
       io.sockets.socket(userSocketId[games[game.id].players[i]]).emit('startRound', games[game.id]);
     }
+
     games[game.id].timeout = new Array();
-    games[game.id].timeout[SECS_PR_ROUND] = setTimeout(sendTime, 1000, SECS_PR_ROUND);
+    games[game.id].timeout[SECS_PR_ROUND] = setTimeout(sendTime, 1000, SECS_PR_ROUND, game);
   }
   
 
-  function sendTime(sec) {
+  function sendTime(sec, game) {
     sec--;
     if(sec >= 0) {
       //TODO: only send to this game's users
-      io.sockets.emit('updateTime', sec);
-      games[game.id].timeout[sec] = setTimeout(sendTime, 1000, sec);
+      console.log("\n\nSEND TIME: " + sec + "\n\n");
+      for (var i = 0; i < games[game.id].players.length; i++) {
+              console.log("\n\nSEND TIME ("+ i +"): " + sec + "\n" + games[game.id].players[i] + "\n" + userSocketId[games[game.id].players[i]] + "\n\n");
+        io.sockets.socket(userSocketId[games[game.id].players[i]]).emit('updateTime', sec);
+      }
+      games[game.id].timeout[sec] = setTimeout(sendTime, 1000, sec, game);
     }
   }
   
