@@ -13,6 +13,9 @@ $(document).ready(function() {
     console.log(game);
     $('#contents').worduel('roundStatus', game);
   });
+  socket.on('endGame', function (game) {
+    $('#contents').worduel('endGame', game);
+  });
   
   if($.cookie('worduelUser') === null) {
     $('#contents').worduel('loginForm');

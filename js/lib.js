@@ -2,7 +2,9 @@
   
   var methods = {
     loginForm : function() {
-      this.html('<form id="login"><input type="text" name="name" value="" id="name" placeholder="Type name..." required="required"><br /><div id="response"></div><input class="enter" type="submit" name="message" value="Play!" id="submit-name"></form>');
+      html = '<form id="login"><input type="text" name="name" value="" id="name" placeholder="Type name..." required="required"><br /><div id="response"></div><input class="enter" type="submit" name="message" value="Play!" id="submit-name"></form>';
+      html += '<div id="text"><a id="about" href="#">What\'s this?</a> - <a id="rules" href="#">Rules</a></div>';
+      this.html(html);
       $('#submit-name').click(function(){
         
         
@@ -166,6 +168,7 @@
       });
     },
     buildBoard: function(game) {
+      baseElement = this;
       this.hide();
       placed= new Array();
       html =  '<div id="game">';
@@ -213,23 +216,9 @@
           },
         });
         element = $('#time');
-
         element.text('10 secs. remaining');
         socket.on('updateTime', function (sec) {
-          if(sec === 0) {
-            element.html('Round ended');
-            element.worduel('readBoard', placed, function(string) {
-              //TODO: add spinner
-              game.rounds[game.round].response = new Object();
-              game.rounds[game.round].response[user] = string;
-              socket.emit('endRound', game);
-            });
-
-          } else if(sec === 1) {
-            element.html('1 sec. remaining');
-          } else {
-            element.html(sec + ' secs. remaining');
-          }
+          element.worduel('updateTime', sec, game);
         });
       });
     },
@@ -244,6 +233,35 @@
         }
       });
       return callback(string);
+    },
+    updateTime : function (sec, game) {
+
+      if(sec === 0) {
+        
+        element.html('Round ended');
+        element.worduel('readBoard', placed, function(string) {
+          //TODO: add spinner
+          $('#private').remove();
+          $('#board').replaceWith('<img id="spinner" src="imgs/spinner.gif" />');
+          game.rounds[game.round].response = new Object();
+          game.rounds[game.round].response[user] = string;
+          socket.emit('endRound', game);
+        });
+        socket.removeAllListeners('updateTime'); 
+
+      } else if(sec === 1) {
+        element.html('1 sec. remaining');
+      } else {
+        element.html(sec + ' secs. remaining');
+      }
+    },
+    endGame : function (game) {
+
+     
+        
+        element.html('<h1>ITS ALL OVER</h1>');
+
+
     },
   };
   

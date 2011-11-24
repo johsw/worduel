@@ -143,3 +143,14 @@ border: #363 1px solid;
   margin-top: 20px;
   font-size: 12px;
 }
+#text {
+  margin-top: 10px;
+  text-shadow: #333 1px 1px 1px;
+  font-size: 10px;
+}
+#text a {
+    color: #bdb;
+}
+#spinner {
+  margin-top: 20px;
+}
