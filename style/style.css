@@ -148,9 +148,14 @@ border: #363 1px solid;
   text-shadow: #333 1px 1px 1px;
   font-size: 10px;
 }
-#text a {
+#text a, #about a {
     color: #bdb;
 }
 #spinner {
   margin-top: 20px;
+}
+#about, #rules {
+  display: none;
+  margin-top: 10px;
+  font-size: 12px;
 }

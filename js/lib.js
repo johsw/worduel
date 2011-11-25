@@ -3,8 +3,28 @@
   var methods = {
     loginForm : function() {
       html = '<form id="login"><input type="text" name="name" value="" id="name" placeholder="Type name..." required="required"><br /><div id="response"></div><input class="enter" type="submit" name="message" value="Play!" id="submit-name"></form>';
-      html += '<div id="text"><a id="about" href="#">What\'s this?</a> - <a id="rules" href="#">Rules</a></div>';
+      html += '<div id="text"><a id="show-about" href="#">What\'s this?</a> - <a id="show-rules" href="#">Rules</a></div>';
+      html += '<div id="rules">Ok. You play two people against each other. You have five rounds. You need to make the longest word each round. You get one point for each letter you use. Good luck</div>';
+      html += '<div id="about">This is a small spare time project I (<a href="http://twitter.com/#!/johsw">@johsw</a>) made in the november 2011. I wanted to try out new webtechnologies. So this project uses node.js, websockets,html5, css3, mongodb...</div>';
       this.html(html);
+      $('#show-about').click(function(){
+        if($('#about').is(":visible")) {
+          $('#about').hide();
+        } else {
+          $('#rules').hide();
+          $('#about').show();
+        }
+        
+      });
+      $('#show-rules').click(function(){
+        if($('#rules').is(":visible")) {
+          $('#rules').hide();
+        } else {
+          $('#about').hide();
+          $('#rules').show();
+        }
+        
+      });
       $('#submit-name').click(function(){
 
 
@@ -291,7 +311,6 @@
       this.html(header+string);
       element = this;
       $('#goto-menu').click(function() {
-        johsw
         element.worduel('showMenu', users);
       });
 
