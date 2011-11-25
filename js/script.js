@@ -13,8 +13,8 @@ $(document).ready(function() {
     console.log(game);
     $('#contents').worduel('roundStatus', game);
   });
-  socket.on('endGame', function (game) {
-    $('#contents').worduel('endGame', game);
+  socket.on('endGame', function (game, users) {
+    $('#contents').worduel('endGame', game, users);
   });
   
   if($.cookie('worduelUser') === null) {

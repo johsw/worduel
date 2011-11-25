@@ -1,23 +1,23 @@
 (function( $ ){
-  
+
   var methods = {
     loginForm : function() {
       html = '<form id="login"><input type="text" name="name" value="" id="name" placeholder="Type name..." required="required"><br /><div id="response"></div><input class="enter" type="submit" name="message" value="Play!" id="submit-name"></form>';
       html += '<div id="text"><a id="about" href="#">What\'s this?</a> - <a id="rules" href="#">Rules</a></div>';
       this.html(html);
       $('#submit-name').click(function(){
-        
-        
+
+
         user = $('input#name').val();
         if (user.length === 0) {
           $('#response').text('Type a name...');
-        } else if (user.length < 3) { 
+        } else if (user.length < 3) {
           $('#response').text('Your name must be at least 3 chars.');
         } else {
           randomString = $().worduel('generateRandomString');
           socket.emit('login', user, randomString);
 
-          socket.on('loginResponse', function (response) {            
+          socket.on('loginResponse', function (response) {
             if(response.loggedIn && response.id ===  randomString) {
               $(document).trigger("worduel.login", response);
               $('form#login').remove();
@@ -27,22 +27,22 @@
           });
 
         }
-        
+
         return false;
       });
     },
-    showMenu : function(users) {  
+    showMenu : function(users) {
       this.hide();
       element = this;
       socket.on('updateMenu', function (response) {
         element.worduel('updateMenu',response.users);
       });
       socket.on('invite', function (inviter) {
-        element.worduel('buildInvitation', inviter, users); 
+        element.worduel('buildInvitation', inviter, users);
       });
       this.worduel('buildMenu', users);
     },
-    buildMenu : function(users, message) {  
+    buildMenu : function(users, message) {
       menu = '<h2>Duellists</h2>';
 
       if(message !== undefined && message.length > 0) {
@@ -57,7 +57,7 @@
       count = 0;
       menu = '';
       for(key in users) {
-        if(key != user) { 
+        if(key != user) {
           count++;
           menu += '<li class="player">';
           menu += '<div class="player-name">'+ key +'</div><div class="controls">';
@@ -69,7 +69,7 @@
               menu += '<span class="player-status">Invited</span>';
               break;
             case 'inviting':
-              menu += '<span class="player-status">Inviting</span>';            
+              menu += '<span class="player-status">Inviting</span>';
               break;
             case 'in game':
               menu += '<span class="player-status">In game</span>';
@@ -107,9 +107,8 @@
         string += '</tr>';
       })
       string += '</table>';
-      if(game.round != 10) {
-        string += '<div id="next-game">The next round will start in a few secs.</div>';
-      }
+      string += '<div id="next-game">The next round will start in a few secs.</div>';
+
       this.html(string);
     },
     generateRandomString: function() {
@@ -133,7 +132,7 @@
       $('#contents').html(invitation).show('fast', function(){
 
          socket.on('cancelInvite', function (inviter) {
-            buildMenu(users, 'Invite got cancelled by <em>' +  inviter + '</em>'); 
+            buildMenu(users, 'Invite got cancelled by <em>' +  inviter + '</em>');
           });
 
         $('.invite-answer').click(function(){
@@ -151,20 +150,20 @@
     },
     buildWaitScreen: function(invitee, users) {
       socket.on('declineInvite', function (inviter) {
-        this.worduel('buildMenu', users, '<em>' +  inviter + "</em> didn't wanna play"); 
+        this.worduel('buildMenu', users, '<em>' +  inviter + "</em> didn't wanna play");
       });
       $('#contents').hide();
       html = '<div id="wait-screen">';
       html += 'Wating for reponse from <em>' + invitee + '</em>';
       html += '<form><input class="cancel" type="submit" value="Forget it!" class="wait-screen-cancel" id="cancel"></form>';
       html += '</div>';
-      
+
       $('#contents').html(html).show('fast', function(){
         $('#cancel').click(function(){
           socket.emit('cancelInvite', invitee);
           buildMenu(users);
           return false;
-        }); 
+        });
       });
     },
     buildBoard: function(game) {
@@ -193,20 +192,20 @@
       html += '</div>';
       this.html(html).show('fast', function(){
 
-        $(".draggable").draggable({ 
-          snap: ".droppable", 
-          snapMode: 'inner', 
-          cursor: "move", 
+        $(".draggable").draggable({
+          snap: ".droppable",
+          snapMode: 'inner',
+          cursor: "move",
           stop: function(event, ui) { $(this).addClass('moved'); }
         });
         $(".droppable").droppable({
-          drop: function(event, ui) { 
+          drop: function(event, ui) {
             $(this).addClass('hit');
             fieldElements = $(this).attr('id').split('-');
             field = fieldElements[2];
             pieceElements = ui.draggable.attr('id').split('-');
             piece = pieceElements[1];
-          
+
             placed = $('#game').data('placed');
             if (placed == undefined) {
               placed = new Array();
@@ -237,7 +236,7 @@
     updateTime : function (sec, game) {
 
       if(sec === 0) {
-        
+
         element.html('Round ended');
         element.worduel('readBoard', placed, function(string) {
           //TODO: add spinner
@@ -247,7 +246,7 @@
           game.rounds[game.round].response[user] = string;
           socket.emit('endRound', game);
         });
-        socket.removeAllListeners('updateTime'); 
+        socket.removeAllListeners('updateTime');
 
       } else if(sec === 1) {
         element.html('1 sec. remaining');
@@ -255,17 +254,51 @@
         element.html(sec + ' secs. remaining');
       }
     },
-    endGame : function (game) {
+    endGame : function (game, users) {
 
-     
-        
-        element.html('<h1>ITS ALL OVER</h1>');
+      string = '';
+      string += '<table id="round-status">';
+      string += '<tr class="headers"><th class="player">Player</th><th>Points</th></tr>';
+      winner = '';
+      topScore = 0;
+      drawn = false;
+      $.each(game.players,function(index, player){
+        string += '<tr class="data">';
+        string += '<td class="player">' + player + '</td>';
+        string += '<td>' + game.points[player] +'</td>';
+        string += '</tr>';
+        if (parseInt(game.points[player]) > topScore) {
+          drawn = false;
+          topScore = game.points[player];
+          winner = player;
+        } else if (parseInt(game.points[player]) == topScore)  {
+          drawn = true;
+        }
+      })
+      string += '</table>';
+      string += '<div id="text"><a href="#" id="goto-menu">Back to menu</a></div>';
+      if (drawn) {
+        header = '<h2>Tie game</h2>';
+      } else {
+        if(user == winner) {
+          header = '<h2>You won!</h2>';
+        } else {
+          header = '<h2>' + winner +' won!</h2>';
+        }
 
+      }
+
+      this.html(header+string);
+      element = this;
+      $('#goto-menu').click(function() {
+        johsw
+        element.worduel('showMenu', users);
+      });
 
     },
   };
-  
-  $.fn.worduel = function(method) {  
+
+  $.fn.worduel = function(method) {
 
 
     // Method calling logic
@@ -275,9 +308,9 @@
        return methods.init.apply( this, arguments );
      } else {
        $.error( 'Method ' +  method + ' does not exist on jQuery.worduel' );
-     }    
+     }
 
 
   };
-    
+
 })( jQuery );

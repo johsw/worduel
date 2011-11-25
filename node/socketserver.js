@@ -7,7 +7,7 @@ var userCookieId = {};
 var words =  new Object();
 var mongodb = require('mongodb');
 
-var NO_ROUNDS = 5;
+var NO_ROUNDS = 1;
 var SECS_PR_ROUND = 10;
 
 // Now create the server, passing our options.
@@ -37,14 +37,14 @@ io.sockets.on('connection', function (socket) {
         text = 'The user <em>'+ user +'</em> is taken :-(';
         response = {loggedIn : false, text : text};
       }
-      io.sockets.socket(socket.id).emit('loginResponse', response); 
+      io.sockets.socket(socket.id).emit('loginResponse', response);
     } else {
       response = {loggedIn : false, text : 'No username given'};
       io.sockets.emit('loginResponse', response);
-    }   
+    }
   });
   socket.on('invite',function(invitee){
-    
+
     socket.get('userName', function (err, inviter) {
       users[invitee].status = 'invited';
       users[inviter].status = 'inviting';
@@ -53,7 +53,7 @@ io.sockets.on('connection', function (socket) {
       io.sockets.emit('updateMenu', {users:users});
     });
   });
-  
+
   socket.on('cancelInvite',function(invitee){
     socket.get('userName', function (err, inviter) {
       users[invitee].status = 'available';
@@ -62,7 +62,7 @@ io.sockets.on('connection', function (socket) {
       io.sockets.emit('updateMenu', {users:users});
     });
   });
-  
+
   socket.on('declineInvite',function(inviter){
     socket.get('userName', function (err, invitee) {
       users[invitee].status = 'available';
@@ -105,7 +105,7 @@ io.sockets.on('connection', function (socket) {
         db.collection('words', function(err, collection){
           collection.find({'word': words[player]}, {'limit':1}, function(err, cursor) {
             cursor.toArray(function(err, docs) {
-              
+
               //console.log('DOCS',docs);
               //console.log('ERR',err);
               //console.log('docs.length',docs.length);
@@ -125,7 +125,7 @@ io.sockets.on('connection', function (socket) {
               } else {
                 games[game.id].rounds[game.round].points[player] = 0;
               }
-            
+
               if(games[game.id].points[player] == undefined) {
                 games[game.id].points[player] = games[game.id].rounds[game.round].points[player];
               } else {
@@ -133,16 +133,21 @@ io.sockets.on('connection', function (socket) {
               }
               //console.log(games[game.id].rounds[game.round].finished);
               if (games[game.id].rounds[game.round].finished.length == games[game.id].players.length) {
-                
+
                 delete games[game.id].rounds[game.round].finished;
-                
-                for (var i = 0; i < games[game.id].players.length; i++) {
-                  io.sockets.socket(userSocketId[games[game.id].players[i]]).emit('roundStatus', games[game.id]);
-                }
-                
-                if (games[game.id].round > NO_ROUNDS) {
-                  games[game.id].roundTimeout = setTimeout(endGame, 6000, game);
+
+                if (games[game.id].round >= NO_ROUNDS) {
+                  //End game
+                  for (var i = 0; i < games[game.id].players.length; i++) {
+                    users[games[game.id].players[i]].status = 'available';
+                  }
+                  for (var i = 0; i < games[game.id].players.length; i++) {
+                    io.sockets.socket(userSocketId[games[game.id].players[i]]).emit('endGame', games[game.id], users);
+                  }
                 } else {
+                  for (var i = 0; i < games[game.id].players.length; i++) {
+                    io.sockets.socket(userSocketId[games[game.id].players[i]]).emit('roundStatus', games[game.id]);
+                  }
                   nextRound =  parseInt(games[game.id].round) + 1;
                   games[game.id].round = nextRound;
                   games[game.id].rounds[games[game.id].round] = {no: games[game.id].round, letters: generateLetters()};
@@ -157,8 +162,8 @@ io.sockets.on('connection', function (socket) {
     });
   });
 
-  
-  
+
+
   socket.on('quit',function(user){
     delete users[user];
     io.sockets.emit('updateMenu', {users:users});
@@ -166,18 +171,18 @@ io.sockets.on('connection', function (socket) {
   socket.on('updateMenu',function(){
     io.sockets.emit('updateMenu', {users:users});
   });
-  
+
   function startRound(game) {
 
     for (var i = 0; i < games[game.id].players.length; i++) {
-      
+
       io.sockets.socket(userSocketId[games[game.id].players[i]]).emit('startRound', games[game.id]);
     }
 
     games[game.id].timeout = new Array();
     games[game.id].timeout[SECS_PR_ROUND] = setTimeout(sendTime, 1000, SECS_PR_ROUND, game);
   }
-  
+
 
   function sendTime(sec, game) {
     sec--;
@@ -191,7 +196,7 @@ io.sockets.on('connection', function (socket) {
       games[game.id].timeout[sec] = setTimeout(sendTime, 1000, sec, game);
     }
   }
-  
+
   function generateLetters() {
     letters = new Array();
     drawn   = new Array();
@@ -208,7 +213,7 @@ io.sockets.on('connection', function (socket) {
     }
     return drawn;
   }
-  
+
   function generateRandomString() {
     string = '';
     for(n=0; n<=28; n++) {
@@ -227,7 +232,7 @@ io.sockets.on('connection', function (socket) {
       console.log('Bum -> by ', user);
     });
   });
-  
+
 
    */
 
