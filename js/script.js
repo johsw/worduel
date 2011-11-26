@@ -1,5 +1,5 @@
 $(document).ready(function() {
-  socket = io.connect('http://worduel.johanneswehner.com:8888');
+  socket = io.connect('http://worduel.johanneswehner.com:8000');
   user = '';
   
   $(document).bind('worduel.login', function(e, data) {
