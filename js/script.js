@@ -16,7 +16,7 @@ $(document).ready(function() {
   socket.on('endGame', function (game, users) {
     $('#contents').worduel('endGame', game, users);
   });
-  
+  /*
   if($.cookie('worduelUser') === null) {
     $('#contents').worduel('loginForm');
   } else {
@@ -24,6 +24,6 @@ $(document).ready(function() {
     socket.emit('getUserStatus', $.cookie('worduelUser'));
     //worduel.initMenu();
   }
-  
+  */
     
 });
