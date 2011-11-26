@@ -1,4 +1,4 @@
-var io = require('socket.io').listen(8080);
+var io = require('socket.io').listen(8888);
 var games = new Array();
 var invites = new Array();
 var users = {};
