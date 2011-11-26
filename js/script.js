@@ -1,5 +1,5 @@
 $(document).ready(function() {
-  socket = io.connect('localhost:82');
+  socket = io.connect('localhost', {port:82});
   user = '';
   
   $(document).bind('worduel.login', function(e, data) {
@@ -16,10 +16,10 @@ $(document).ready(function() {
   socket.on('endGame', function (game, users) {
     $('#contents').worduel('endGame', game, users);
   });
-  /*
-  if($.cookie('worduelUser') === null) {
+  
+  //if($.cookie('worduelUser') === null) {
     $('#contents').worduel('loginForm');
-  } else {
+  /*} else {
     
     socket.emit('getUserStatus', $.cookie('worduelUser'));
     //worduel.initMenu();
