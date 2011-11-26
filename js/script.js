@@ -1,5 +1,5 @@
 $(document).ready(function() {
-  socket = io.connect('localhost', {port:82});
+  socket = io.connect('http://localhost', {port:843});
   user = '';
   
   $(document).bind('worduel.login', function(e, data) {
