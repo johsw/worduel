@@ -10,7 +10,6 @@ $(document).ready(function() {
     $('#contents').worduel('startRound', game);
   });
   socket.on('roundStatus', function (game) {
-    console.log(game);
     $('#contents').worduel('roundStatus', game);
   });
   socket.on('endGame', function (game, users) {
