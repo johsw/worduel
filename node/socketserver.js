@@ -7,7 +7,7 @@ var userCookieId = {};
 var words =  new Object();
 var mongodb = require('mongodb');
 
-var NO_ROUNDS = 1;
+var NO_ROUNDS = 5;
 var SECS_PR_ROUND = 10;
 
 // Now create the server, passing our options.
