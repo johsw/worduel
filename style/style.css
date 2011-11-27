@@ -2,7 +2,7 @@ body {
   font-family: 'Helvetica', Verdana, Arial, "MS Trebuchet", sans-serif;
   text-shadow: #333 3px 3px 2px;
   color: #efe;
-  background: #bdb;
+  background: #363;
 }
 
 h1 {
@@ -75,17 +75,12 @@ input#no:hover {
 .player-name {
   width: 350px;
 }
+
 body#page #body-wrapper {
-  width: 300px;
-  margin: 0 auto;
   background: #363;
   padding: 10px;
   text-align: center;
-  border: 3px solid #131;
-  -moz-border-radius: 5px;
-  border-radius: 5px;
 }
-
 .letter, .letter.hit, .board-cell {
   width: 33px;
   height: 25px;

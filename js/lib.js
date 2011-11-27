@@ -217,14 +217,6 @@
           snapMode: 'inner',
           cursor: "move",
           stop: function(event, ui) { $(this).addClass('moved'); }
-        }).touch({
-          animate: false,
-          sticky: false,
-          dragx: true,
-          dragy: true,
-          rotate: false,
-          resort: true,
-          scale: false
         });
         $(".droppable").droppable({
           drop: function(event, ui) {
