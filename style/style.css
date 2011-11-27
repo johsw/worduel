@@ -77,10 +77,12 @@ input#no:hover {
 }
 
 body#page #body-wrapper {
+  width: 300px;
+  margin: 0 auto;
   background: #363;
-  padding: 10px;
   text-align: center;
 }
+
 .letter, .letter.hit, .board-cell {
   width: 33px;
   height: 25px;
