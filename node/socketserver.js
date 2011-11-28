@@ -16,6 +16,15 @@ var SECS_PR_ROUND = 10;
 
 
 io.sockets.on('connection', function (socket) {
+  socket.on('disconnect',function(event){
+    socket.get('userName', function (err, user) {
+      if(user != null) {
+        delete userSocketId[user];
+        delete users[user];
+        socket.broadcast.emit('updateMenu', {users:users});
+      }
+    });
+  });
 
   socket.on('login', function (user, cookieId) {
     if(user.length > 0) {
@@ -187,10 +196,7 @@ io.sockets.on('connection', function (socket) {
   function sendTime(sec, game) {
     sec--;
     if(sec >= 0) {
-      //TODO: only send to this game's users
-      console.log("\n\nSEND TIME: " + sec + "\n\n");
       for (var i = 0; i < games[game.id].players.length; i++) {
-              console.log("\n\nSEND TIME ("+ i +"): " + sec + "\n" + games[game.id].players[i] + "\n" + userSocketId[games[game.id].players[i]] + "\n\n");
         io.sockets.socket(userSocketId[games[game.id].players[i]]).emit('updateTime', sec);
       }
       games[game.id].timeout[sec] = setTimeout(sendTime, 1000, sec, game);
@@ -225,22 +231,7 @@ io.sockets.on('connection', function (socket) {
     }
     return string;
   }
-/*
-  socket.on('disconnect',function(event){
-    console.log(event);
-    socket.get('userName', function (err, user) {
-      console.log('Bum -> by ', user);
-    });
-  });
 
-
-   */
-
-  /*socket.on('disconnect', function () {
-    io.sockets.emit('user disconnected');
-  });
-  */
 
 
 });
-
