@@ -8,12 +8,7 @@ var words =  new Object();
 var mongodb = require('mongodb');
 
 var NO_ROUNDS = 5;
-var SECS_PR_ROUND = 10;
-
-// Now create the server, passing our options.
-//var serv = new mongodb.Server('localhost', 27017, serverOptions);
-
-
+var SECS_PR_ROUND = 15;
 
 io.sockets.on('connection', function (socket) {
   socket.on('disconnect',function(event){
